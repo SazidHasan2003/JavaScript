@@ -1,0 +1,15 @@
+const prompt=require('prompt-sync')()
+
+let n=prompt('enter the n value: ');
+for(let i=1;i<=n; i++){
+
+for(let j=1;j<=n; j++){
+
+//process.stdout.write(String(i));
+process.stdout.write("* ");
+
+    
+}
+console.log();
+
+}

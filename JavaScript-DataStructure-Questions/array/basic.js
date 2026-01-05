@@ -1,0 +1,11 @@
+let arr=[];
+arr.push(100,40);
+arr.push(10);
+arr.push(20);
+arr.push(30);
+arr.push(100);
+console.log(arr[1]);
+
+console.log(arr);
+arr.pop(arr);
+console.log(arr);
