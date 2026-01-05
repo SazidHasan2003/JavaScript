@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Email & Password Validator</title>
+  <style>
+/* General page style */
+body {
+  font-family: Arial, sans-serif;
+  background: #222;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Centered card */
+.container {
+  background: #fff;
+  padding: 25px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  width: 350px;
+}
+
+/* Heading */
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Form styling */
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 6px;
+  color: #444;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Error messages */
+.error-msg {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+  display: none;
+  height: 14px; /* Keeps space even if empty */
+}
+
+/* Button */
+button {
+  width: 100%;
+  padding: 12px;
+  background: #007bff;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+
+.resultMessage{
+
+text-align: center;
+padding-top: 10px;
+
+
+
+}
+
+
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <form autocomplete="off"  id="loginForm">
+      <h2>Email & Password Validator</h2>
+      
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="text" id="email" placeholder="Enter your email" required />
+        <small class="error-msg" id="emailError"></small>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required />
+        <small class="error-msg" id="passwordError"></small>
+      </div>
+      
+      <button type="submit">Validate</button>
+    </form>
+    <div class="resultMessage">
+      
+    </div>
+  </div>
+  <script>
+
+let email=document.querySelector("#email");
+let password=document.querySelector("#password");
+let form=document.querySelector("form");
+form.addEventListener("submit",function(dets){
+dets.preventDefault();
+
+document.querySelector("#emailError").textContent="";
+document.querySelector("#passwordError").textContent="";
+
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()[\]{};:'",.<>/?\\|`~+=_-]).{8,}$/;
+
+let emailans=emailRegex.test(email.value);
+let passwordans=passwordRegex.test(password.value);
+
+let isValid=true;
+
+if(!emailans){
+
+document.querySelector("#emailError").textContent="Email is incorrect";
+document.querySelector("#emailError").style.display="initial";
+isValid=false;
+
+}
+
+
+if(!passwordans){
+
+document.querySelector("#passwordError").textContent="password is incorrect";
+document.querySelector("#passwordError").style.display="initial";
+isValid=false;
+
+}
+
+if(isValid){
+
+document.querySelector(".resultMessage").textContent="Everything is Correct";
+document.querySelector(".resultMessage").style.color="green";
+
+} 
+
+});
+
+  </script>
+</body>
+</html>

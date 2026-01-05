@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>image name find</title>
+
+    <style>
+
+*{
+
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+
+
+}
+
+html,
+body{
+
+ width:100% ;
+ height: 100%;
+
+
+}
+
+#main{
+
+display: flex;
+align-items: center;
+justify-content: center;
+width: 100%;
+height: 100%;
+background-color: #222;
+
+
+}
+
+input{
+
+    display: none;
+}
+
+#btn{
+
+padding: 12px 22px ;
+background-color: rgb(41, 143, 114);
+color:white;
+font-weight: 580;
+border-radius: 6px;
+}
+
+#btn:hover{
+
+    cursor: pointer;
+    background-color: rgb(17, 70, 55);
+}
+
+
+
+    </style>
+</head>
+<body>
+    
+
+<div id="main">
+
+<input id="fileInp" type="file" >
+
+<div id="btn">Uplode File</div>
+</div>
+
+
+
+    <script>
+
+let btn=document.querySelector('#btn');
+let fileInp=document.querySelector('#fileInp');
+
+btn.addEventListener("click",function(){
+
+fileInp.click();
+
+})
+
+fileInp.addEventListener("change",function(dets){
+const file=dets.target.files[0];
+// btn.textContent=dets.target.files[0].name
+if(file){
+
+    btn.textContent=file.name;
+}else{
+    btn.textContent="No Files Selected";
+}
+
+
+})
+
+fileInp.addEventListener("click", function() {
+        if (!fileInp.files.length) {
+            btn.textContent = "No Files Selected";
+        }
+
+    });
+
+    </script>
+</body>
+</html>

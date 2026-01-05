@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+*{
+
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+/* background-color: #222; */
+}
+
+html,
+body{
+
+ width:100% ;
+ height: 100%;
+ background-color: #444;
+ color: white;
+
+
+}
+
+
+ul{
+
+padding: 100px;
+
+}
+
+.lt{
+
+text-decoration: line-through;
+
+}
+</style>
+
+</head>
+
+
+
+<body>
+
+    <ul>
+    <li>Apple</li>
+    <li>Guava</li>
+    <li>Mango</li>
+    <li>Orange</li>
+    <li>Banana</li>
+</ul>
+    
+
+<script>
+
+let ul=document.querySelector("ul");
+
+ul.addEventListener("click", function(dets){
+// console.log("clicked");
+
+// dets.target.style.textDecoration="line-through";
+
+// dets.target.classList.add("lt");
+dets.target.classList.toggle("lt");
+
+});
+
+</script>
+</body>
+</html>

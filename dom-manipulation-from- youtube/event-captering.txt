@@ -1,0 +1,11 @@
+When you click on something (like a button), the browser handles that click in two simple steps:
+
+Step 1: Going Down (Capturing)
+
+The click starts from the top of the page and goes down to the element you clicked.
+
+Step 2: Going Up (Bubbling)
+
+After reaching the clicked element, the click then goes up to its parent elements.
+
+👉 First it goes down, then it goes up.

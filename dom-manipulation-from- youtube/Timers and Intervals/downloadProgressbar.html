@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Download Progress</title>
+  <style>
+
+:root{
+  --bg: #0b0e11;
+  --card: #12161a;
+  --card-2: #1a2026;
+  --text: #e6eaf0;
+  --muted: #9aa4b2;
+  --primary: #3b82f6;
+  --primary-600: #2563eb;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  --radius: 14px;
+  --bar-height: 14px;
+  --bar-bg: #20262e;
+  --bar-fill: linear-gradient(90deg, #60a5fa, #3b82f6);
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 800px at 100% -200px, #1b2430 0%, transparent 70%),
+    radial-gradient(1000px 700px at -200px 100%, #0e141b 0%, transparent 70%),
+    var(--bg);
+  color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  display:grid;
+  place-items:center;
+  padding: 24px;
+}
+
+.page { width:min(720px, 100%); }
+
+.card{
+  background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.card__header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+}
+.card__title{
+  margin:0 0 2px;
+  font-size: 18px;
+  letter-spacing:.2px;
+}
+.card__subtitle{
+  margin:0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.dot{ margin: 0 6px; opacity:.6; }
+
+/* Badge that changes with state via JS by toggling data-state on #downloadCard */
+.badge{
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #1f2937;
+  color: #aeb7c4;
+  border: 1px solid rgba(255,255,255,.06);
+}
+#downloadCard[data-state="active"] .badge{ background: rgba(59,130,246,.15); color:#93c5fd; border-color: rgba(59,130,246,.35); }
+#downloadCard[data-state="paused"] .badge{ background: rgba(245,158,11,.18); color:#facc15; border-color: rgba(245,158,11,.35); }
+#downloadCard[data-state="complete"] .badge{ background: rgba(34,197,94,.16); color:#86efac; border-color: rgba(34,197,94,.35); }
+#downloadCard[data-state="error"] .badge{ background: rgba(239,68,68,.16); color:#fca5a5; border-color: rgba(239,68,68,.35); }
+
+.progress-block{ margin-top: 16px; }
+
+/* Progress */
+.progress{
+  position: relative;
+  height: var(--bar-height);
+  background: var(--bar-bg);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.06);
+}
+.progress__bar{
+  position:absolute;
+  inset:0;
+  width: var(--progress, 0%);
+  background: var(--bar-fill);
+  background-size: 200% 100%;
+  transition: width .2s linear, background-position .4s ease;
+}
+.progress__text{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 12px;
+  color: #eef4ff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.6);
+  pointer-events:none;
+}
+
+/* Indeterminate variant: add .indeterminate to .progress and .progress__bar */
+.progress.indeterminate .progress__bar{
+  width: 40%;
+  left: -40%;
+  animation: indeterminate 1.2s cubic-bezier(.65,.05,.36,1) infinite;
+  background-image:
+    linear-gradient(90deg, rgba(96,165,250,.2), rgba(59,130,246,.5)),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.22) 0 8px, rgba(255,255,255,.06) 8px 16px);
+}
+@keyframes indeterminate{
+  0% { left: -40%; }
+  60% { left: 60%; }
+  100% { left: 100%; }
+}
+
+/* Meta row */
+.meta{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+.meta__item{
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.meta__label{
+  display:block;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing:.3px;
+}
+.meta__value{
+  display:block;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* Buttons */
+.actions{
+  display:flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.btn{
+  -webkit-tap-highlight-color: transparent;
+  appearance:none;
+  border: 1px solid rgba(255,255,255,.08);
+  background: #20262e;
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: transform .06s ease, background .2s ease, border-color .2s ease;
+}
+.btn:hover{ transform: translateY(-1px); }
+.btn:active{ transform: translateY(0); }
+.btn[disabled]{ opacity:.5; cursor:not-allowed; }
+.btn--primary{
+  background: linear-gradient(180deg, #4f86ff, #3b82f6);
+  border-color: rgba(59,130,246,.5);
+}
+.btn--primary:hover{ filter: brightness(1.05); }
+.btn--ghost{
+  background: transparent;
+  border-color: rgba(255,255,255,.14);
+}
+
+/* Screen-reader live region (also visible subtly) */
+.sr-live{
+  margin: 12px 2px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Success/Error accent on completion */
+#downloadCard[data-state="complete"] .progress__bar{ background: linear-gradient(90deg, #34d399, #22c55e); }
+#downloadCard[data-state="error"] .progress__bar{ background: linear-gradient(90deg, #f87171, #ef4444); }
+#downloadCard[data-state="paused"] .progress__bar{ background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .progress__bar{ transition: none; }
+  .btn{ transition: none; }
+}
+
+/* Responsive */
+@media (max-width: 520px){
+  .meta{ grid-template-columns: 1fr; }
+}
+
+
+
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="card" id="downloadCard" data-state="idle">
+      <header class="card__header">
+        <div>
+          <h1 class="card__title">Download</h1>
+          <p class="card__subtitle">
+            <span id="fileName">example-file.zip</span>
+            <span class="dot">·</span>
+            <span id="fileSize">120 MB</span>
+          </p>
+        </div>
+        <div class="badge" id="statusBadge">Idle</div>
+      </header>
+
+      <div class="progress-block">
+        <!-- JS: update --progress (0%..100%) and aria-valuenow -->
+        <div class="progress" aria-label="Download progress">
+          <div
+            id="progressBar"
+            class="progress__bar"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            style="--progress: 0%"
+          ></div>
+          <div class="progress__text" id="progressText">0%</div>
+        </div>
+
+        <div class="meta">
+          <div class="meta__item">
+            <span class="meta__label">Speed</span>
+            <span class="meta__value" id="speed">0 MB/s</span>
+          </div>
+          <div class="meta__item">
+            <span class="meta__label">ETA</span>
+            <span class="meta__value" id="eta">—</span>
+          </div>
+          <div class="meta__item">
+            <span class="meta__label">Transferred</span>
+            <span class="meta__value" id="transferred">0 / 120 MB</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <!-- JS: enable/disable + toggle labels as needed -->
+        <button id="btnStart" class="btn btn--primary">Start</button>
+        <button id="btnPause" class="btn" disabled>Pause</button>
+        <button id="btnCancel" class="btn btn--ghost" disabled>Cancel</button>
+      </div>
+
+      <!-- Live status for screen readers / subtle text for users -->
+      <p class="sr-live" aria-live="polite" id="liveRegion">Waiting to start…</p>
+    </div>
+
+    <!-- Tip: add 'indeterminate' class on .progress when you don't know length -->
+    <!-- <div class="progress indeterminate">...</div> -->
+  </main>
+
+  <script>
+
+    // ====== Element refs ======
+const card = document.getElementById("downloadCard");
+const bar  = document.getElementById("progressBar");
+const pct  = document.getElementById("progressText");
+const speedEl = document.getElementById("speed");
+const etaEl = document.getElementById("eta");
+const xferEl = document.getElementById("transferred");
+const badge = document.getElementById("statusBadge");
+const live  = document.getElementById("liveRegion");
+
+const btnStart = document.getElementById("btnStart");
+const btnPause = document.getElementById("btnPause");
+const btnCancel= document.getElementById("btnCancel");
+
+// ====== Simulated download model ======
+const TOTAL_BYTES = 120 * 1024 * 1024; // 120 MB (match your UI)
+let downloaded = 0;
+let timer = null;
+// start speed ~1.5–4.0 MB/s
+let speedBytesPerSec = mb(Math.random() * 2.5 + 1.5);
+
+function mb(n){ return n * 1024 * 1024; }
+function clamp(n,min,max){ return Math.min(max, Math.max(min, n)); }
+
+function formatBytes(b){
+  if (b >= mb(1)) return (b / mb(1)).toFixed(1) + " MB";
+  return (b / 1024).toFixed(0) + " KB";
+}
+function formatTime(s){
+  if (!isFinite(s) || s < 0) return "—";
+  const m = Math.floor(s/60), sec = Math.ceil(s%60);
+  return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+}
+
+function setState(state, label){
+  card.dataset.state = state;
+  badge.textContent = label;
+}
+
+function updateUI(){
+  const percent = clamp((downloaded / TOTAL_BYTES) * 100, 0, 100);
+  bar.style.setProperty("--progress", percent.toFixed(1) + "%");
+  bar.setAttribute("aria-valuenow", percent.toFixed(1));
+  pct.textContent = Math.floor(percent) + "%";
+
+  const remaining = Math.max(0, TOTAL_BYTES - downloaded);
+  const etaSec = remaining / Math.max(1, speedBytesPerSec);
+
+  speedEl.textContent = (speedBytesPerSec / mb(1)).toFixed(1) + " MB/s";
+  etaEl.textContent = formatTime(etaSec);
+  xferEl.textContent = `${formatBytes(downloaded)} / ${formatBytes(TOTAL_BYTES)}`;
+
+  live.textContent = `${Math.floor(percent)}% at ${speedEl.textContent}, ${etaEl.textContent} remaining`;
+}
+
+function tick(){
+  // tiny speed jitter to feel organic
+  const jitter = (Math.random() - 0.5) * 0.25; // ±0.25 MB/s
+  speedBytesPerSec = clamp(speedBytesPerSec + mb(jitter) , mb(0.8), mb(5));
+
+  // advance ~ every 100ms
+  const step = speedBytesPerSec / 10;
+  downloaded = clamp(downloaded + step, 0, TOTAL_BYTES);
+  updateUI();
+
+  if (downloaded >= TOTAL_BYTES){
+    stopTimer();
+    setState("complete", "Complete");
+    live.textContent = "Download complete.";
+  }
+}
+
+function startTimer(){
+  if (timer) return; // already running
+  timer = setInterval(tick, 100);
+}
+function stopTimer(){
+  clearInterval(timer);
+  timer = null;
+}
+
+// ====== Controls ======
+btnStart.addEventListener("click", () => {
+  setState("active", "Downloading…");
+  btnStart.disabled = true;
+  btnPause.disabled = false;
+  btnCancel.disabled = false;
+  startTimer();
+});
+
+btnPause.addEventListener("click", () => {
+  if (!timer){
+    // resume
+    setState("active", "Downloading…");
+    btnPause.textContent = "Pause";
+    startTimer();
+  } else {
+    // pause
+    setState("paused", "Paused");
+    btnPause.textContent = "Resume";
+    stopTimer();
+  }
+});
+
+btnCancel.addEventListener("click", () => {
+  stopTimer();
+  downloaded = 0;
+  updateUI();
+  setState("idle", "Idle");
+  btnStart.disabled = false;
+  btnPause.disabled = true;
+  btnPause.textContent = "Pause";
+  btnCancel.disabled = true;
+  live.textContent = "Download canceled.";
+});
+
+// init UI
+updateUI();
+setState("idle", "Idle");
+btnPause.disabled = true;
+btnCancel.disabled = true;
+
+
+  </script>
+</body>
+</html>
